@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ConversaJá — Lobby</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .rooms-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .room-card { padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+    .room-card h3 { margin: 0; font-size: 16px; }
+    .room-card .tema { color: var(--muted); font-size: 13px; min-height: 34px; }
+    .room-card .foot { display: flex; align-items: center; justify-content: space-between; }
+    .toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; }
+    .toolbar .input { max-width: 320px; }
+
+    /* Modal de criar sala (ilustrativo) */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(17,24,39,0.45);
+      display: flex; align-items: center; justify-content: center; padding: 24px;
+    }
+    .modal { width: 100%; max-width: 420px; padding: 24px; }
+    .modal h2 { margin: 0 0 16px; font-size: 18px; }
+    .modal .row { margin-bottom: 14px; }
+    .modal .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="dot"></span> ConversaJá</div>
+    <div class="user">
+      <span class="avatar">MA</span> maria_dev
+      <button class="btn btn-ghost btn-sm">Sair</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="page-head">
+      <h1>Salas públicas</h1>
+    </div>
+
+    <div class="toolbar">
+      <input class="input" placeholder="Buscar sala por nome ou tema…" />
+      <button class="btn btn-primary">+ Criar sala</button>
+    </div>
+
+    <div class="rooms-grid">
+      <div class="card room-card">
+        <div class="foot">
+          <h3>Engenharia de Software</h3>
+          <span class="badge oficial">oficial</span>
+        </div>
+        <p class="tema">Dúvidas e discussões sobre a disciplina.</p>
+        <div class="foot">
+          <span class="badge online"><span class="online-dot"></span> 23 online</span>
+          <button class="btn btn-ghost btn-sm">Entrar</button>
+        </div>
+      </div>
+
+      <div class="card room-card">
+        <div class="foot">
+          <h3>Grupo de estudo — Provas</h3>
+        </div>
+        <p class="tema">Revisão para a próxima avaliação.</p>
+        <div class="foot">
+          <span class="badge online"><span class="online-dot"></span> 8 online</span>
+          <button class="btn btn-ghost btn-sm">Entrar</button>
+        </div>
+      </div>
+
+      <div class="card room-card">
+        <div class="foot">
+          <h3>Aleatório</h3>
+        </div>
+        <p class="tema">Bate-papo livre sobre qualquer assunto.</p>
+        <div class="foot">
+          <span class="badge online"><span class="online-dot"></span> 41 online</span>
+          <button class="btn btn-ghost btn-sm">Entrar</button>
+        </div>
+      </div>
+
+      <div class="card room-card">
+        <div class="foot">
+          <h3>Projetos Web</h3>
+        </div>
+        <p class="tema">Angular, NestJS e tempo real.</p>
+        <div class="foot">
+          <span class="badge online"><span class="online-dot"></span> 15 online</span>
+          <button class="btn btn-ghost btn-sm">Entrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de criação (exibido para ilustrar o fluxo RF04/UC03) -->
+  <div class="modal-backdrop">
+    <div class="card modal">
+      <h2>Criar nova sala</h2>
+      <div class="row">
+        <label class="field" for="nome">Nome da sala</label>
+        <input class="input" id="nome" placeholder="ex.: Plantão de dúvidas" />
+      </div>
+      <div class="row">
+        <label class="field" for="tema">Tema</label>
+        <input class="input" id="tema" placeholder="Sobre o que é a sala?" />
+      </div>
+      <div class="actions">
+        <button class="btn btn-ghost">Cancelar</button>
+        <button class="btn btn-primary">Criar e entrar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="rf-note">
+    <b>RF02</b> listar salas · <b>RF04 / UC03</b> criar sala (criador vira moderador, RN03).
+    <a href="03-sala.html" style="color:#93c5fd">→ Sala</a>
+  </div>
+</body>
+</html>
