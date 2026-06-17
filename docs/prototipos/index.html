@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ConversaJá — Protótipos</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .hero { text-align: center; padding: 40px 0 10px; }
+    .hero .brand { justify-content: center; font-size: 34px; }
+    .hero p { color: var(--muted); max-width: 560px; margin: 10px auto 0; }
+    .screens { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; margin-top: 28px; }
+    .screen { padding: 20px; text-decoration: none; color: inherit; display: block; }
+    .screen:hover { box-shadow: var(--shadow-lg); }
+    .screen .num { font-size: 12px; font-weight: 700; color: var(--primary); }
+    .screen h3 { margin: 6px 0 6px; font-size: 17px; }
+    .screen p { margin: 0; font-size: 13px; color: var(--muted); }
+    .screen .rf { margin-top: 10px; }
+    .flow { font-size: 13px; color: var(--muted); text-align: center; margin: 24px 0 6px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="hero">
+      <div class="brand"><span class="dot"></span> ConversaJá</div>
+      <p>Protótipos de média fidelidade das telas principais. Abra cada tela para ver o fluxo de
+         interação. A implementação final em Angular deve manter coerência com estes protótipos.</p>
+    </div>
+
+    <p class="flow">Fluxo principal: Entrada → Lobby → Sala &nbsp;|&nbsp; Fluxo administrativo: Painel admin</p>
+
+    <div class="screens">
+      <a class="card screen" href="01-entrada.html">
+        <div class="num">01</div>
+        <h3>Entrada</h3>
+        <p>Identificação por apelido, sem cadastro. Validação e estado de erro.</p>
+        <div class="rf"><span class="badge">RF01</span></div>
+      </a>
+
+      <a class="card screen" href="02-lobby.html">
+        <div class="num">02</div>
+        <h3>Lobby</h3>
+        <p>Lista de salas públicas com tema e nº de participantes; criação de sala.</p>
+        <div class="rf"><span class="badge">RF02</span> <span class="badge">RF04</span></div>
+      </a>
+
+      <a class="card screen" href="03-sala.html">
+        <div class="num">03</div>
+        <h3>Sala (chat)</h3>
+        <p>Mensagens em tempo real, online, "digitando…", avisos e ações de moderação.</p>
+        <div class="rf"><span class="badge">RF03</span> <span class="badge">RF05–RF10</span> <span class="badge">RF12/13</span></div>
+      </a>
+
+      <a class="card screen" href="04-admin.html">
+        <div class="num">04</div>
+        <h3>Painel admin</h3>
+        <p>Indicadores de uso e gestão de salas oficiais.</p>
+        <div class="rf"><span class="badge">RF14</span> <span class="badge">RF15</span></div>
+      </a>
+    </div>
+  </div>
+</body>
+</html>

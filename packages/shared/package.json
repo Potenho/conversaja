@@ -1,0 +1,21 @@
+{
+  "name": "@conversaja/shared",
+  "version": "0.0.1",
+  "description": "Contratos compartilhados (eventos WebSocket, DTOs, enums) entre frontend e backend do ConversaJá.",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "watch": "tsc -p tsconfig.json --watch"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ConversaJá — Painel administrativo</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 26px; }
+    .metric { padding: 18px; }
+    .metric .label { font-size: 13px; color: var(--muted); }
+    .metric .value { font-size: 30px; font-weight: 700; margin-top: 4px; }
+    .metric .value .online-dot { width: 12px; height: 12px; display: inline-block; }
+    .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .section-head h2 { font-size: 16px; margin: 0; }
+    .actions-cell { display: flex; gap: 8px; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="dot"></span> ConversaJá <span class="badge oficial">admin</span></div>
+    <div class="user"><span class="avatar">AD</span> admin <button class="btn btn-ghost btn-sm">Sair</button></div>
+  </header>
+
+  <div class="container">
+    <div class="page-head"><h1>Painel administrativo</h1></div>
+
+    <!-- Indicadores de uso (RF15) -->
+    <div class="metrics">
+      <div class="card metric">
+        <div class="label">Salas ativas</div>
+        <div class="value">12</div>
+      </div>
+      <div class="card metric">
+        <div class="label">Usuários online</div>
+        <div class="value"><span class="online-dot"></span> 87</div>
+      </div>
+      <div class="card metric">
+        <div class="label">Mensagens (última hora)</div>
+        <div class="value">1.204</div>
+      </div>
+    </div>
+
+    <!-- Gestão de salas oficiais (RF14) -->
+    <div class="card" style="padding: 6px 6px 0">
+      <div class="section-head" style="padding: 14px 14px 0">
+        <h2>Salas oficiais</h2>
+        <button class="btn btn-primary btn-sm">+ Nova sala oficial</button>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Nome</th><th>Tema</th><th>Online</th><th>Capacidade</th><th>Ações</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Engenharia de Software</td>
+            <td>Dúvidas da disciplina</td>
+            <td>23</td>
+            <td>50</td>
+            <td class="actions-cell">
+              <button class="btn btn-ghost btn-sm">Editar</button>
+              <button class="btn btn-danger btn-sm">Remover</button>
+            </td>
+          </tr>
+          <tr>
+            <td>Avisos gerais</td>
+            <td>Comunicados oficiais</td>
+            <td>54</td>
+            <td>100</td>
+            <td class="actions-cell">
+              <button class="btn btn-ghost btn-sm">Editar</button>
+              <button class="btn btn-danger btn-sm">Remover</button>
+            </td>
+          </tr>
+          <tr>
+            <td>Suporte</td>
+            <td>Ajuda com o sistema</td>
+            <td>10</td>
+            <td>50</td>
+            <td class="actions-cell">
+              <button class="btn btn-ghost btn-sm">Editar</button>
+              <button class="btn btn-danger btn-sm">Remover</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="rf-note">
+    <b>RF14</b> gerenciar salas oficiais (criar/editar/remover) · <b>RF15</b> monitorar uso
+    (salas ativas e usuários online). Acesso restrito ao administrador.
+  </div>
+</body>
+</html>
