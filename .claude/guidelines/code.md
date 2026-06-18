@@ -54,7 +54,7 @@ fonte de verdade evita divergência de contrato.
 
 - Todo código novo entra com teste. Mínimo: **unitário** para regra de negócio.
 - Padrão **AAA** (Arrange–Act–Assert); um comportamento por teste; nomes descritivos.
-- Backend: Jest (unit + e2e). Frontend: Jest/Karma + Testing Library para componentes.
+- Backend: Jest (unit + e2e). Frontend: Vitest + jsdom (runner nativo do Angular 22, sem navegador).
 - Priorize testar regras de negócio (RN01–RN08) e o fluxo crítico de envio de mensagem (RF05/UC04).
 
 ## Documentação no código

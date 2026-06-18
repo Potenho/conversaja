@@ -1,0 +1,48 @@
+.criar-box {
+  padding: 16px;
+  margin-bottom: 20px;
+
+  .row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .input {
+    flex: 1;
+    min-width: 160px;
+  }
+}
+
+.vazio {
+  color: var(--muted);
+  text-align: center;
+  padding: 40px 0;
+}
+
+.rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.room-card {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  h3 {
+    margin: 0;
+    font-size: 16px;
+  }
+  .tema {
+    color: var(--muted);
+    font-size: 13px;
+    min-height: 20px;
+  }
+  .foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+}

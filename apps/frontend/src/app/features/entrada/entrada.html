@@ -1,0 +1,34 @@
+<div class="entry-wrap">
+  <div class="card entry-card">
+    <div class="brand"><span class="dot"></span> ConversaJá</div>
+    <p class="tagline">Converse em tempo real, sem cadastro. Escolha um apelido e entre.</p>
+
+    <form (ngSubmit)="entrar()">
+      <label class="field" for="apelido">Seu apelido</label>
+      <input
+        id="apelido"
+        name="apelido"
+        class="input"
+        [class.error]="erro()"
+        [(ngModel)]="apelido"
+        placeholder="ex.: maria_dev"
+        autocomplete="off"
+        autofocus
+      />
+      @if (erro()) {
+        <p class="helper err">{{ erro() }}</p>
+      } @else {
+        <p class="helper">Use de 3 a 20 caracteres alfanuméricos.</p>
+      }
+
+      <button class="btn btn-primary btn-block" type="submit" [disabled]="enviando()">
+        {{ enviando() ? 'Entrando…' : 'Entrar' }}
+      </button>
+    </form>
+
+    <p class="lgpd">
+      Coletamos apenas seu apelido para identificá-lo durante a sessão. Nenhum dado pessoal
+      sensível é armazenado.
+    </p>
+  </div>
+</div>

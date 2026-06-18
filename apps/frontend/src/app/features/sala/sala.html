@@ -1,0 +1,80 @@
+<header class="topbar">
+  <div class="brand"><span class="dot"></span> ConversaJá</div>
+  <div class="user">
+    <span class="avatar">{{ apelido()?.slice(0, 2) }}</span> {{ apelido() }}
+    @if (souModerador()) {
+      <span class="badge mod">moderador</span>
+    }
+  </div>
+</header>
+
+<div class="room-layout">
+  <div class="card chat">
+    <div class="chat-head">
+      <button class="back" (click)="voltar()">←</button>
+      <h2>Sala</h2>
+    </div>
+
+    @if (erro()) {
+      <p class="erro-bar">{{ erro() }}</p>
+    }
+
+    <div class="messages">
+      @for (msg of mensagens(); track msg.id) {
+        @if (msg.tipo === TipoMensagem.SISTEMA) {
+          <div class="sys">— {{ msg.conteudo }} —</div>
+        } @else {
+          <div class="msg" [class.me]="msg.autor === apelido()">
+            <span class="avatar">{{ msg.autor.slice(0, 2) }}</span>
+            <div class="bubble">
+              <div class="meta"><b>{{ msg.autor }}</b></div>
+              <div class="body">{{ msg.conteudo }}</div>
+            </div>
+            @if (souModerador() && msg.autor !== apelido()) {
+              <button class="remove" (click)="remover(msg.id)" title="Remover mensagem">remover</button>
+            }
+          </div>
+        }
+      }
+    </div>
+
+    <div class="typing">
+      @if (digitando()) {
+        {{ digitando() }} está digitando…
+      }
+    </div>
+
+    <div class="composer">
+      <form (ngSubmit)="enviar()">
+        <div class="row">
+          <input
+            class="input"
+            name="texto"
+            [(ngModel)]="texto"
+            (ngModelChange)="aoDigitar()"
+            [maxlength]="maxMensagem"
+            placeholder="Escreva uma mensagem…"
+            autocomplete="off"
+          />
+          <button class="btn btn-primary" type="submit">Enviar</button>
+        </div>
+      </form>
+      <div class="counter">{{ texto.length }} / {{ maxMensagem }}</div>
+    </div>
+  </div>
+
+  <aside class="card sidebar">
+    <h3>Online · {{ participantes().length }}</h3>
+    @for (p of participantes(); track p.apelido) {
+      <div class="member">
+        <span class="online-dot"></span> {{ p.apelido }}
+        @if (p.papel === 'MODERADOR') {
+          <span class="badge mod">mod</span>
+        }
+        @if (souModerador() && p.apelido !== apelido()) {
+          <button class="btn btn-danger btn-sm kick" (click)="expulsar(p.apelido)">Expulsar</button>
+        }
+      </div>
+    }
+  </aside>
+</div>
