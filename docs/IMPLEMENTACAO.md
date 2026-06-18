@@ -190,6 +190,7 @@ Atualize esta seção a cada avanço relevante (ordem cronológica inversa).
 
 | Data       | Mudança                                                        |
 |------------|---------------------------------------------------------------|
+| 2026-06-18 | Implantação e CI/CD: pipeline GitHub Actions (lint + testes + build), Dockerfiles de backend e frontend (nginx com proxy WebSocket), `docker-compose.yml` e instruções no `README.md`. |
 | 2026-06-18 | Núcleo de chat em tempo real: gateway WebSocket + serviços de sessão/salas/mensagens (RN01–RN08, sanitização XSS) e telas entrada/lobby/sala. Frontend migrado para Angular 22 (Vitest, sem Karma); Node ≥24.15 (`.nvmrc`). |
 | 2026-06-17 | Scaffold do monorepo: `apps/backend` (NestJS 11), `apps/frontend` (Angular), `packages/shared` (contratos). npm workspaces; builds e testes verdes. |
 | 2026-06-17 | Protótipos de média fidelidade em `docs/prototipos/`.         |

@@ -21,7 +21,9 @@ describe('SessionService (RN01 — apelido)', () => {
 
   it('rejeita apelido já em uso (case-insensitive)', () => {
     service.registrar('socket-1', 'maria');
-    expect(() => service.registrar('socket-2', 'MARIA')).toThrow('já está em uso');
+    expect(() => service.registrar('socket-2', 'MARIA')).toThrow(
+      'já está em uso',
+    );
   });
 
   it('libera o apelido ao remover a sessão', () => {

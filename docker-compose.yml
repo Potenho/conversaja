@@ -1,0 +1,23 @@
+# ConversaJá — sobe frontend (nginx) e backend (NestJS) juntos.
+# Uso: docker compose up --build  ->  acesse http://localhost:8080
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+    expose:
+      - '3000'
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+    ports:
+      - '8080:80'
+    depends_on:
+      - backend
+    restart: unless-stopped
