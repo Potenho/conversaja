@@ -50,7 +50,10 @@ export class SessionService {
   exigirApelido(socketId: string): string {
     const apelido = this.porSocket.get(socketId);
     if (!apelido) {
-      throw new DomainError('NAO_AUTENTICADO', 'Entre com um apelido antes de continuar.');
+      throw new DomainError(
+        'NAO_AUTENTICADO',
+        'Entre com um apelido antes de continuar.',
+      );
     }
     return apelido;
   }

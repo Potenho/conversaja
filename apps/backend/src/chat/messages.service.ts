@@ -16,7 +16,10 @@ export class MessagesService {
   adicionar(salaId: string, autor: string, conteudo: string): Mensagem {
     const texto = conteudo.trim();
     if (texto.length === 0) {
-      throw new DomainError('MENSAGEM_VAZIA', 'A mensagem não pode estar vazia.');
+      throw new DomainError(
+        'MENSAGEM_VAZIA',
+        'A mensagem não pode estar vazia.',
+      );
     }
     if (texto.length > LIMITES.MENSAGEM_MAX) {
       throw new DomainError(

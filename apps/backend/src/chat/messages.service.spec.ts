@@ -17,7 +17,9 @@ describe('MessagesService (RN04, RN05, RNF06 — mensagens)', () => {
   });
 
   it('rejeita mensagem vazia ou só com espaços (RN05)', () => {
-    expect(() => service.adicionar('sala-1', 'maria', '   ')).toThrow(DomainError);
+    expect(() => service.adicionar('sala-1', 'maria', '   ')).toThrow(
+      DomainError,
+    );
   });
 
   it('rejeita mensagem acima de 500 caracteres (RN04)', () => {
@@ -26,7 +28,11 @@ describe('MessagesService (RN04, RN05, RNF06 — mensagens)', () => {
   });
 
   it('sanitiza conteúdo para evitar XSS (RNF06)', () => {
-    const msg = service.adicionar('sala-1', 'maria', '<script>alert(1)</script>');
+    const msg = service.adicionar(
+      'sala-1',
+      'maria',
+      '<script>alert(1)</script>',
+    );
     expect(msg.conteudo).not.toContain('<script>');
     expect(msg.conteudo).toContain('&lt;script&gt;');
   });

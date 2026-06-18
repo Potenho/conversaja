@@ -24,7 +24,9 @@ import { MessagesService } from './messages.service';
 import { RoomsService } from './rooms.service';
 import { SessionService } from './session.service';
 
-type Ack<T = unknown> = { sucesso: true; dados?: T } | { sucesso: false; erro: ErroPayload };
+type Ack<T = unknown> =
+  | { sucesso: true; dados?: T }
+  | { sucesso: false; erro: ErroPayload };
 
 /**
  * Gateway WebSocket do ConversaJá. Traduz os eventos de `@conversaja/shared` em
@@ -84,7 +86,11 @@ export class ChatGateway implements OnGatewayDisconnect {
   ): Ack<{ sala: SalaResumo }> {
     return this.comAck(socket, () => {
       const apelido = this.session.exigirApelido(socket.id);
-      const sala = this.rooms.criar(payload?.nome ?? '', payload?.tema ?? '', apelido);
+      const sala = this.rooms.criar(
+        payload?.nome ?? '',
+        payload?.tema ?? '',
+        apelido,
+      );
       this.ingressar(socket, sala.id);
       this.emitirHistoricoEParticipantes(socket, sala.id);
       this.emitirListaSalas();
@@ -133,7 +139,11 @@ export class ChatGateway implements OnGatewayDisconnect {
       if (!this.rooms.estaNaSala(payload?.salaId ?? '', apelido)) {
         throw new DomainError('FORA_DA_SALA', 'Você não está nesta sala.');
       }
-      const mensagem = this.messages.adicionar(payload.salaId, apelido, payload.conteudo ?? '');
+      const mensagem = this.messages.adicionar(
+        payload.salaId,
+        apelido,
+        payload.conteudo ?? '',
+      );
       this.server.to(payload.salaId).emit(ServerEvents.NOVA_MENSAGEM, mensagem); // RF06
       return undefined;
     });
@@ -146,13 +156,11 @@ export class ChatGateway implements OnGatewayDisconnect {
   ): void {
     const apelido = this.session.apelidoDe(socket.id);
     if (!apelido || !payload?.salaId) return;
-    socket
-      .to(payload.salaId)
-      .emit(ServerEvents.USUARIO_DIGITANDO, {
-        salaId: payload.salaId,
-        apelido,
-        digitando: !!payload.digitando,
-      });
+    socket.to(payload.salaId).emit(ServerEvents.USUARIO_DIGITANDO, {
+      salaId: payload.salaId,
+      apelido,
+      digitando: !!payload.digitando,
+    });
   }
 
   // --- Moderação -----------------------------------------------------------
@@ -166,12 +174,10 @@ export class ChatGateway implements OnGatewayDisconnect {
       const apelido = this.session.exigirApelido(socket.id);
       this.exigirModerador(payload?.salaId ?? '', apelido);
       this.messages.remover(payload.salaId, payload.mensagemId);
-      this.server
-        .to(payload.salaId)
-        .emit(ServerEvents.MENSAGEM_REMOVIDA, {
-          salaId: payload.salaId,
-          mensagemId: payload.mensagemId,
-        });
+      this.server.to(payload.salaId).emit(ServerEvents.MENSAGEM_REMOVIDA, {
+        salaId: payload.salaId,
+        mensagemId: payload.mensagemId,
+      });
       return undefined;
     });
   }
@@ -189,11 +195,12 @@ export class ChatGateway implements OnGatewayDisconnect {
       const alvoSocketId = this.session.socketDe(alvo);
       if (alvoSocketId) {
         const alvoSocket = this.server.sockets.sockets.get(alvoSocketId);
-        alvoSocket?.leave(payload.salaId);
+        void alvoSocket?.leave(payload.salaId);
         this.salasPorSocket.get(alvoSocketId)?.delete(payload.salaId);
-        this.server
-          .to(alvoSocketId)
-          .emit(ServerEvents.EXPULSO, { salaId: payload.salaId, texto: 'Você foi removido da sala.' });
+        this.server.to(alvoSocketId).emit(ServerEvents.EXPULSO, {
+          salaId: payload.salaId,
+          texto: 'Você foi removido da sala.',
+        });
       }
       this.emitirAviso(payload.salaId, `${alvo} foi removido por ${moderador}`);
       this.emitirParticipantes(payload.salaId);
@@ -205,7 +212,7 @@ export class ChatGateway implements OnGatewayDisconnect {
   // --- Auxiliares ----------------------------------------------------------
 
   private ingressar(socket: Socket, salaId: string): void {
-    socket.join(salaId);
+    void socket.join(salaId);
     let salas = this.salasPorSocket.get(socket.id);
     if (!salas) {
       salas = new Set();
@@ -216,7 +223,7 @@ export class ChatGateway implements OnGatewayDisconnect {
 
   private deixarSala(socket: Socket, salaId: string, apelido: string): void {
     this.rooms.sair(salaId, apelido);
-    socket.leave(salaId);
+    void socket.leave(salaId);
     this.salasPorSocket.get(socket.id)?.delete(salaId);
     this.emitirAviso(salaId, `${apelido} saiu da sala`);
     this.emitirParticipantes(salaId);
@@ -225,7 +232,10 @@ export class ChatGateway implements OnGatewayDisconnect {
 
   private exigirModerador(salaId: string, apelido: string): void {
     if (!this.rooms.ehModerador(salaId, apelido)) {
-      throw new DomainError('SEM_PERMISSAO', 'Apenas o moderador da sala pode executar esta ação.');
+      throw new DomainError(
+        'SEM_PERMISSAO',
+        'Apenas o moderador da sala pode executar esta ação.',
+      );
     }
   }
 
@@ -235,7 +245,9 @@ export class ChatGateway implements OnGatewayDisconnect {
   }
 
   private emitirParticipantes(salaId: string): void {
-    this.server.to(salaId).emit(ServerEvents.PARTICIPANTES, this.rooms.participantes(salaId));
+    this.server
+      .to(salaId)
+      .emit(ServerEvents.PARTICIPANTES, this.rooms.participantes(salaId));
   }
 
   private emitirAviso(salaId: string, texto: string): void {
@@ -252,7 +264,10 @@ export class ChatGateway implements OnGatewayDisconnect {
       return { sucesso: true, dados: fn() };
     } catch (erro) {
       if (erro instanceof DomainError) {
-        const payload: ErroPayload = { codigo: erro.codigo, mensagem: erro.message };
+        const payload: ErroPayload = {
+          codigo: erro.codigo,
+          mensagem: erro.message,
+        };
         socket.emit(ServerEvents.ERRO, payload);
         return { sucesso: false, erro: payload };
       }

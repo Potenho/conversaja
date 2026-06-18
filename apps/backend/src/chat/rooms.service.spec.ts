@@ -22,7 +22,9 @@ describe('RoomsService (RN03, RN08 — salas)', () => {
 
   it('rejeita nome de sala duplicado', () => {
     service.criar('Aleatório', 'tema', 'maria');
-    expect(() => service.criar('aleatório', 'outro', 'joao')).toThrow(DomainError);
+    expect(() => service.criar('aleatório', 'outro', 'joao')).toThrow(
+      DomainError,
+    );
   });
 
   it('lista a sala criada para todos (RF02)', () => {

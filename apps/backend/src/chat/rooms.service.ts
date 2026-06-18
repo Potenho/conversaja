@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { LIMITES, Papel, Participante, SalaResumo, Visibilidade } from '@conversaja/shared';
+import {
+  LIMITES,
+  Papel,
+  Participante,
+  SalaResumo,
+  Visibilidade,
+} from '@conversaja/shared';
 import { DomainError } from './domain-error';
 
 interface RoomEntity {
@@ -25,13 +31,19 @@ export class RoomsService {
   criar(nome: string, tema: string, criador: string): SalaResumo {
     const nomeLimpo = nome.trim();
     if (nomeLimpo.length < 1 || nomeLimpo.length > 60) {
-      throw new DomainError('NOME_SALA_INVALIDO', 'O nome da sala deve ter de 1 a 60 caracteres.');
+      throw new DomainError(
+        'NOME_SALA_INVALIDO',
+        'O nome da sala deve ter de 1 a 60 caracteres.',
+      );
     }
     const duplicada = [...this.salas.values()].some(
       (s) => s.nome.toLowerCase() === nomeLimpo.toLowerCase(),
     );
     if (duplicada) {
-      throw new DomainError('NOME_SALA_DUPLICADO', 'Já existe uma sala com esse nome.');
+      throw new DomainError(
+        'NOME_SALA_DUPLICADO',
+        'Já existe uma sala com esse nome.',
+      );
     }
     const sala: RoomEntity = {
       id: randomUUID(),
@@ -54,8 +66,14 @@ export class RoomsService {
   /** RF03 — adiciona o usuário à sala como participante, respeitando RN08. */
   entrar(salaId: string, apelido: string): SalaResumo {
     const sala = this.exigirSala(salaId);
-    if (!sala.participantes.has(apelido) && sala.participantes.size >= sala.capacidadeMax) {
-      throw new DomainError('SALA_CHEIA', 'Esta sala atingiu a capacidade máxima.');
+    if (
+      !sala.participantes.has(apelido) &&
+      sala.participantes.size >= sala.capacidadeMax
+    ) {
+      throw new DomainError(
+        'SALA_CHEIA',
+        'Esta sala atingiu a capacidade máxima.',
+      );
     }
     if (!sala.participantes.has(apelido)) {
       sala.participantes.set(apelido, Papel.PARTICIPANTE);
@@ -70,11 +88,16 @@ export class RoomsService {
 
   participantes(salaId: string): Participante[] {
     const sala = this.exigirSala(salaId);
-    return [...sala.participantes.entries()].map(([apelido, papel]) => ({ apelido, papel }));
+    return [...sala.participantes.entries()].map(([apelido, papel]) => ({
+      apelido,
+      papel,
+    }));
   }
 
   ehModerador(salaId: string, apelido: string): boolean {
-    return this.salas.get(salaId)?.participantes.get(apelido) === Papel.MODERADOR;
+    return (
+      this.salas.get(salaId)?.participantes.get(apelido) === Papel.MODERADOR
+    );
   }
 
   estaNaSala(salaId: string, apelido: string): boolean {
