@@ -76,26 +76,28 @@ Cada funcionalidade rastreia até um RF do documento de requisitos. Estado: ☐ 
 
 | RF    | Funcionalidade                       | Onde (módulo/feature)            | Estado |
 |-------|--------------------------------------|----------------------------------|--------|
-| RF01  | Entrar com apelido                   | backend `auth` · front `entrada` | ☐      |
-| RF02  | Listar salas públicas                | backend `rooms` · front `lobby`  | ☐      |
-| RF03  | Entrar em uma sala                   | backend `rooms` · front `room`   | ☐      |
-| RF04  | Criar sala pública                   | backend `rooms` · front `lobby`  | ☐      |
-| RF05  | Enviar mensagem em tempo real        | backend `messages` (gateway)     | ☐      |
-| RF06  | Receber mensagens em tempo real      | front `SocketService`            | ☐      |
-| RF07  | Visualizar usuários online           | backend `rooms` · front `room`   | ☐      |
-| RF08  | Histórico recente                    | backend `messages`               | ☐      |
-| RF09  | Indicador "digitando..."             | backend gateway · front `room`   | ☐      |
-| RF10  | Notificar entrada/saída              | backend gateway                  | ☐      |
-| RF11  | Sair da sala / sistema               | backend `auth`/`rooms`           | ☐      |
-| RF12  | Remover mensagem (moderação)         | backend `moderation`             | ☐      |
-| RF13  | Expulsar usuário (moderação)         | backend `moderation`             | ☐      |
-| RF14  | Gerenciar salas oficiais (admin)     | backend `admin`                  | ☐      |
-| RF15  | Monitorar o sistema (admin)          | backend `admin` · front `admin`  | ☐      |
+| RF01  | Entrar com apelido                   | backend `chat/session` · front `entrada` | ☑  |
+| RF02  | Listar salas públicas                | backend `chat/rooms` · front `lobby`     | ☑  |
+| RF03  | Entrar em uma sala                   | backend `chat/rooms` · front `sala`      | ☑  |
+| RF04  | Criar sala pública                   | backend `chat/rooms` · front `lobby`     | ☑  |
+| RF05  | Enviar mensagem em tempo real        | backend `chat/messages` (gateway)        | ☑  |
+| RF06  | Receber mensagens em tempo real      | front `SocketService` · `sala`           | ☑  |
+| RF07  | Visualizar usuários online           | backend `chat/rooms` · front `sala`      | ☑  |
+| RF08  | Histórico recente                    | backend `chat/messages`                  | ☑  |
+| RF09  | Indicador "digitando..."             | backend gateway · front `sala`           | ☑  |
+| RF10  | Notificar entrada/saída              | backend gateway                          | ☑  |
+| RF11  | Sair da sala / sistema               | backend gateway · front `sala`           | ☑  |
+| RF12  | Remover mensagem (moderação)         | backend `chat/messages` (gateway)        | ☑  |
+| RF13  | Expulsar usuário (moderação)         | backend gateway                          | ☑  |
+| RF14  | Gerenciar salas oficiais (admin)     | backend `admin`                          | ☐  |
+| RF15  | Monitorar o sistema (admin)          | backend `admin` · front `admin`          | ☐  |
 
-Regras de negócio implementadas como validações/serviços: RN01 (apelido único, 3–20 alfanum.),
+Regras de negócio já implementadas como validações/serviços: RN01 (apelido único, 3–20 alfanum.),
 RN02 (só moderador modera), RN03 (criador vira moderador), RN04 (≤500 caracteres),
-RN05 (sem mensagem vazia), RN06 (expulso bloqueado 10 min), RN07 (limpeza de sala ociosa),
-RN08 (capacidade máx. da sala).
+RN05 (sem mensagem vazia), RN08 (capacidade máx. da sala).
+
+Pendentes (próximas etapas): RN06 (bloqueio de reingresso por 10 min após expulsão),
+RN07 (remoção automática de salas públicas ociosas) e persistência em banco (hoje em memória).
 
 ---
 
@@ -111,7 +113,7 @@ de negócio e o caminho crítico de tempo real.
 | Unitário       | Jest                    | Serviços e regras de negócio isoladas (RN01–RN08)          |
 | Integração     | Jest + Nest TestingModule | Service ↔ repositório/banco; validação de DTOs           |
 | End-to-end     | Jest + Socket.IO client | Fluxo completo de envio/recebimento via WebSocket (UC04)   |
-| Componente UI  | Jest/Karma + Testing Library | Componentes Angular (lobby, sala, entrada)           |
+| Componente UI  | Vitest + jsdom          | Componentes Angular (lobby, sala, entrada); sem navegador  |
 | Fluxo manual   | Roteiro documentado     | Validação ponta a ponta de um cenário real (ver 4.4)       |
 
 ### 4.2. Prioridades (atributos de qualidade)
@@ -188,6 +190,7 @@ Atualize esta seção a cada avanço relevante (ordem cronológica inversa).
 
 | Data       | Mudança                                                        |
 |------------|---------------------------------------------------------------|
-| 2026-06-17 | Scaffold do monorepo: `apps/backend` (NestJS 11), `apps/frontend` (Angular 20), `packages/shared` (contratos). npm workspaces; builds e testes verdes. |
+| 2026-06-18 | Núcleo de chat em tempo real: gateway WebSocket + serviços de sessão/salas/mensagens (RN01–RN08, sanitização XSS) e telas entrada/lobby/sala. Frontend migrado para Angular 22 (Vitest, sem Karma); Node ≥24.15 (`.nvmrc`). |
+| 2026-06-17 | Scaffold do monorepo: `apps/backend` (NestJS 11), `apps/frontend` (Angular), `packages/shared` (contratos). npm workspaces; builds e testes verdes. |
 | 2026-06-17 | Protótipos de média fidelidade em `docs/prototipos/`.         |
 | 2026-06-17 | Criação das convenções (`.claude/`) e deste documento.        |

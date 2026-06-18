@@ -87,6 +87,7 @@ export interface Participante {
 /** Eventos emitidos pelo cliente para o servidor. */
 export const ClientEvents = {
   ENTRAR_SISTEMA: 'auth:entrar', // RF01
+  LISTAR_SALAS: 'sala:listar', // RF02
   CRIAR_SALA: 'sala:criar', // RF04
   ENTRAR_SALA: 'sala:entrar', // RF03
   SAIR_SALA: 'sala:sair', // RF11
@@ -103,7 +104,7 @@ export const ServerEvents = {
   PARTICIPANTES: 'sala:participantes', // RF07
   NOVA_MENSAGEM: 'mensagem:nova', // RF06
   MENSAGEM_REMOVIDA: 'mensagem:removida', // RF12
-  USUARIO_DIGITANDO: 'mensagem:digitando', // RF09
+  USUARIO_DIGITANDO: 'mensagem:digitando:status', // RF09
   AVISO: 'sala:aviso', // RF10 (entrada/saída)
   EXPULSO: 'moderacao:expulso', // RF13
   ERRO: 'erro', // mensagem de erro destinada a um cliente

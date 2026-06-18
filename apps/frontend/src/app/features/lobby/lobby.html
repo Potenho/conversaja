@@ -1,0 +1,51 @@
+<header class="topbar">
+  <div class="brand"><span class="dot"></span> ConversaJá</div>
+  <div class="user">
+    <span class="avatar">{{ apelido()?.slice(0, 2) }}</span> {{ apelido() }}
+    <button class="btn btn-ghost btn-sm" (click)="sair()">Sair</button>
+  </div>
+</header>
+
+<div class="container">
+  <div class="page-head">
+    <h1>Salas públicas</h1>
+    <button class="btn btn-primary" (click)="mostrarCriar.set(!mostrarCriar())">+ Criar sala</button>
+  </div>
+
+  @if (mostrarCriar()) {
+    <div class="card criar-box">
+      <div class="row">
+        <input class="input" name="nome" [(ngModel)]="nome" placeholder="Nome da sala" />
+        <input class="input" name="tema" [(ngModel)]="tema" placeholder="Tema" />
+        <button class="btn btn-primary" (click)="criar()">Criar e entrar</button>
+      </div>
+      @if (erro()) {
+        <p class="helper err">{{ erro() }}</p>
+      }
+    </div>
+  }
+
+  @if (salas().length === 0) {
+    <p class="vazio">Nenhuma sala ainda. Crie a primeira!</p>
+  }
+
+  <div class="rooms-grid">
+    @for (sala of salas(); track sala.id) {
+      <div class="card room-card">
+        <div class="foot">
+          <h3>{{ sala.nome }}</h3>
+          @if (sala.visibilidade === 'OFICIAL') {
+            <span class="badge oficial">oficial</span>
+          }
+        </div>
+        <p class="tema">{{ sala.tema }}</p>
+        <div class="foot">
+          <span class="badge online">
+            <span class="online-dot"></span> {{ sala.participantesOnline }} online
+          </span>
+          <button class="btn btn-ghost btn-sm" (click)="entrar(sala.id)">Entrar</button>
+        </div>
+      </div>
+    }
+  </div>
+</div>
