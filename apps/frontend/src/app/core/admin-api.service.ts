@@ -8,9 +8,15 @@ import type {
   SalaResumo,
 } from '@conversaja/shared';
 
-/** Base do backend: em dev (porta 4200) aponta para :3000; em produção, mesma origem. */
+/**
+ * Base da API REST: em dev (porta 4200) aponta para :3000; em produção, mesma
+ * origem (o nginx faz proxy de /api para o backend). O prefixo /api separa a API
+ * das rotas SPA do Angular (ex.: a página /admin).
+ */
 const BASE =
-  typeof window !== 'undefined' && window.location.port === '4200' ? 'http://localhost:3000' : '';
+  (typeof window !== 'undefined' && window.location.port === '4200'
+    ? 'http://localhost:3000'
+    : '') + '/api';
 
 /** Cliente REST do painel administrativo (RF14/RF15), autenticado por token. */
 @Injectable({ providedIn: 'root' })
