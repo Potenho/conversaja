@@ -213,6 +213,28 @@ export class ChatGateway implements OnGatewayDisconnect {
     });
   }
 
+  // --- API para a administração (RF14) -------------------------------------
+
+  /** Retransmite a lista de salas a todos (após mudanças feitas pelo admin). */
+  async notificarSalas(): Promise<void> {
+    await this.emitirListaSalas();
+  }
+
+  /** Encerra uma sala: notifica e remove os participantes, e atualiza a lista. */
+  async encerrarSala(salaId: string): Promise<void> {
+    this.server.to(salaId).emit(ServerEvents.EXPULSO, {
+      salaId,
+      texto: 'A sala foi encerrada por um administrador.',
+    });
+    const sockets = await this.server.in(salaId).fetchSockets();
+    for (const s of sockets) {
+      void s.leave(salaId);
+      this.salasPorSocket.get(s.id)?.delete(salaId);
+    }
+    this.rooms.encerrarPresenca(salaId);
+    await this.emitirListaSalas();
+  }
+
   // --- Auxiliares ----------------------------------------------------------
 
   private ingressar(socket: Socket, salaId: string): void {

@@ -1,0 +1,118 @@
+.login-wrap {
+  min-height: calc(100vh - 60px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  padding: 28px;
+
+  h1 {
+    font-size: 20px;
+    margin: 0 0 4px;
+  }
+  .hint {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 0 0 18px;
+  }
+  .btn {
+    margin-top: 14px;
+  }
+}
+
+.erro-bar {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  background: var(--danger-light);
+  color: var(--danger);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.metric {
+  padding: 18px;
+
+  .label {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .value {
+    font-size: 30px;
+    font-weight: 700;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .value .online-dot {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+.criar-box {
+  padding: 18px;
+  margin-bottom: 20px;
+
+  h2 {
+    font-size: 16px;
+    margin: 0 0 12px;
+  }
+  .row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .input {
+    flex: 1;
+    min-width: 160px;
+  }
+}
+
+.tabela {
+  padding: 6px 6px 0;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+th,
+td {
+  text-align: left;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+th {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--muted);
+}
+.acoes {
+  display: flex;
+  gap: 8px;
+}
+.input-sm {
+  padding: 6px 8px;
+  font-size: 13px;
+}
+.vazio {
+  text-align: center;
+  color: var(--muted);
+  padding: 28px 0;
+}

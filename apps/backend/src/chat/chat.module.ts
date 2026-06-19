@@ -21,5 +21,12 @@ import { TypeOrmMensagemStore, TypeOrmSalaStore } from './stores/typeorm.store';
     { provide: SalaStore, useClass: TypeOrmSalaStore },
     { provide: MensagemStore, useClass: TypeOrmMensagemStore },
   ],
+  exports: [
+    ChatGateway,
+    SessionService,
+    RoomsService,
+    SalaStore,
+    MensagemStore,
+  ],
 })
 export class ChatModule {}

@@ -42,6 +42,11 @@ export class SessionService {
     return this.porSocket.get(socketId);
   }
 
+  /** RF15 — total de usuários conectados ao sistema. */
+  totalConectados(): number {
+    return this.porSocket.size;
+  }
+
   socketDe(apelido: string): string | undefined {
     return this.porApelido.get(apelido.toLowerCase());
   }

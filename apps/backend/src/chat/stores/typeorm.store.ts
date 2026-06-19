@@ -4,7 +4,7 @@ import { ILike, Repository } from 'typeorm';
 import { Mensagem, TipoMensagem, Visibilidade } from '@conversaja/shared';
 import { SalaEntity } from '../../database/entities/sala.entity';
 import { MensagemEntity } from '../../database/entities/mensagem.entity';
-import { NovaSala, SalaRecord, SalaStore } from './sala-store';
+import { AtualizacaoSala, NovaSala, SalaRecord, SalaStore } from './sala-store';
 import { MensagemStore } from './mensagem-store';
 
 /** Persistência das salas via TypeORM/PostgreSQL. */
@@ -39,6 +39,21 @@ export class TypeOrmSalaStore extends SalaStore {
   async listarTodas(): Promise<SalaRecord[]> {
     const entidades = await this.repo.find({ order: { criadaEm: 'ASC' } });
     return entidades.map((e) => this.toRecord(e));
+  }
+
+  async atualizar(
+    id: string,
+    dados: AtualizacaoSala,
+  ): Promise<SalaRecord | null> {
+    const entidade = await this.repo.findOne({ where: { id } });
+    if (!entidade) return null;
+    if (dados.nome !== undefined) entidade.nome = dados.nome;
+    if (dados.tema !== undefined) entidade.tema = dados.tema;
+    return this.toRecord(await this.repo.save(entidade));
+  }
+
+  async remover(id: string): Promise<void> {
+    await this.repo.delete({ id });
   }
 
   private toRecord(e: SalaEntity): SalaRecord {
@@ -90,6 +105,10 @@ export class TypeOrmMensagemStore extends MensagemStore {
 
   async remover(salaId: string, id: string): Promise<void> {
     await this.repo.delete({ id, salaId });
+  }
+
+  async removerPorSala(salaId: string): Promise<void> {
+    await this.repo.delete({ salaId });
   }
 
   private toMensagem(e: MensagemEntity): Mensagem {

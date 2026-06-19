@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { Mensagem } from '@conversaja/shared';
-import { NovaSala, SalaRecord, SalaStore } from './sala-store';
+import { AtualizacaoSala, NovaSala, SalaRecord, SalaStore } from './sala-store';
 import { MensagemStore } from './mensagem-store';
 
 /** Implementação em memória das salas — usada nos testes (sem banco). */
@@ -31,6 +31,19 @@ export class InMemorySalaStore extends SalaStore {
   listarTodas(): Promise<SalaRecord[]> {
     return Promise.resolve([...this.salas.values()]);
   }
+
+  atualizar(id: string, dados: AtualizacaoSala): Promise<SalaRecord | null> {
+    const rec = this.salas.get(id);
+    if (!rec) return Promise.resolve(null);
+    if (dados.nome !== undefined) rec.nome = dados.nome;
+    if (dados.tema !== undefined) rec.tema = dados.tema;
+    return Promise.resolve(rec);
+  }
+
+  remover(id: string): Promise<void> {
+    this.salas.delete(id);
+    return Promise.resolve();
+  }
 }
 
 /** Implementação em memória das mensagens — usada nos testes (sem banco). */
@@ -54,6 +67,11 @@ export class InMemoryMensagemStore extends MensagemStore {
     const lista = this.lista(salaId);
     const indice = lista.findIndex((m) => m.id === id);
     if (indice !== -1) lista.splice(indice, 1);
+    return Promise.resolve();
+  }
+
+  removerPorSala(salaId: string): Promise<void> {
+    this.porSala.delete(salaId);
     return Promise.resolve();
   }
 
