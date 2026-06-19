@@ -27,5 +27,8 @@ jobs:
       - name: Testes (backend + frontend)
         run: npm test
 
+      - name: Teste e2e (fluxo WebSocket)
+        run: npm run test:e2e
+
       - name: Build (shared + backend + frontend)
         run: npm run build

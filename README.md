@@ -18,23 +18,25 @@ implementação/testes em [docs/IMPLEMENTACAO.md](docs/IMPLEMENTACAO.md).
 ```bash
 npm install              # instala o monorepo (compila o pacote shared no postinstall)
 
+docker compose up db     # sobe um PostgreSQL local (ou use seu próprio)
 npm run dev:backend      # NestJS em http://localhost:3000 (WebSocket)
 npm run dev:frontend     # Angular em http://localhost:4200
 ```
 
 Abra `http://localhost:4200`, escolha um apelido e entre. Em desenvolvimento, o frontend
-conecta no backend em `localhost:3000`.
+conecta no backend em `localhost:3000`. O backend usa `DATABASE_URL` (veja `.env.example`);
+por padrão aponta para o Postgres local em `localhost:5432`.
 
 ## Executar com Docker (implantável por terceiros)
 
-Sobe frontend e backend juntos, sem configurar ambiente manualmente:
+Sobe banco (PostgreSQL), backend e frontend juntos, sem configurar ambiente manualmente:
 
 ```bash
 docker compose up --build
 ```
 
 Acesse `http://localhost:8080`. O nginx serve o Angular e encaminha o WebSocket (`/socket.io`)
-para o backend na mesma origem.
+para o backend na mesma origem; o backend persiste salas e mensagens no Postgres.
 
 ## Scripts (raiz)
 

@@ -3,17 +3,23 @@ import { randomUUID } from 'node:crypto';
 import { LIMITES, Mensagem, TipoMensagem } from '@conversaja/shared';
 import { DomainError } from './domain-error';
 import { sanitize } from './sanitize';
+import { MensagemStore } from './stores/mensagem-store';
 
 /**
- * Armazena as mensagens por sala (em memória) e aplica as regras de conteúdo:
- * RN05 (sem mensagem vazia), RN04 (máx. 500 caracteres) e sanitização XSS (RNF06).
+ * Regras de conteúdo e persistência das mensagens: RN05 (sem mensagem vazia),
+ * RN04 (máx. 500 caracteres) e sanitização XSS (RNF06). Os dados são guardados
+ * via {@link MensagemStore}.
  */
 @Injectable()
 export class MessagesService {
-  private readonly porSala = new Map<string, Mensagem[]>();
+  constructor(private readonly store: MensagemStore) {}
 
-  /** RF05 — valida, sanitiza e armazena uma mensagem de texto. */
-  adicionar(salaId: string, autor: string, conteudo: string): Mensagem {
+  /** RF05 — valida, sanitiza e persiste uma mensagem de texto. */
+  async adicionar(
+    salaId: string,
+    autor: string,
+    conteudo: string,
+  ): Promise<Mensagem> {
     const texto = conteudo.trim();
     if (texto.length === 0) {
       throw new DomainError(
@@ -35,31 +41,20 @@ export class MessagesService {
       tipo: TipoMensagem.TEXTO,
       enviadaEm: new Date().toISOString(),
     };
-    this.lista(salaId).push(mensagem);
+    await this.store.inserir(mensagem);
     return mensagem;
   }
 
   /** RF08 — últimas N mensagens da sala, em ordem cronológica. */
-  recentes(salaId: string): Mensagem[] {
-    return this.lista(salaId).slice(-LIMITES.HISTORICO_RECENTE);
+  async recentes(salaId: string): Promise<Mensagem[]> {
+    return this.store.listarRecentes(salaId, LIMITES.HISTORICO_RECENTE);
   }
 
   /** RF12 — remove uma mensagem da sala (moderação). */
-  remover(salaId: string, mensagemId: string): Mensagem {
-    const lista = this.lista(salaId);
-    const indice = lista.findIndex((m) => m.id === mensagemId);
-    if (indice === -1) {
+  async remover(salaId: string, mensagemId: string): Promise<void> {
+    if (!(await this.store.existe(salaId, mensagemId))) {
       throw new DomainError('MENSAGEM_INEXISTENTE', 'Mensagem não encontrada.');
     }
-    return lista.splice(indice, 1)[0];
-  }
-
-  private lista(salaId: string): Mensagem[] {
-    let lista = this.porSala.get(salaId);
-    if (!lista) {
-      lista = [];
-      this.porSala.set(salaId, lista);
-    }
-    return lista;
+    await this.store.remover(salaId, mensagemId);
   }
 }

@@ -47,18 +47,18 @@ export class ChatGateway implements OnGatewayDisconnect {
 
   // --- Ciclo de vida -------------------------------------------------------
 
-  handleDisconnect(socket: Socket): void {
+  async handleDisconnect(socket: Socket): Promise<void> {
     const apelido = this.session.remover(socket.id);
     const salas = this.salasPorSocket.get(socket.id);
     if (apelido && salas) {
       for (const salaId of salas) {
         this.rooms.sair(salaId, apelido);
         this.emitirAviso(salaId, `${apelido} saiu da sala`);
-        this.emitirParticipantes(salaId);
+        await this.emitirParticipantes(salaId);
       }
     }
     this.salasPorSocket.delete(socket.id);
-    this.emitirListaSalas();
+    await this.emitirListaSalas();
   }
 
   // --- Autenticação / lobby ------------------------------------------------
@@ -67,33 +67,37 @@ export class ChatGateway implements OnGatewayDisconnect {
   entrarSistema(
     @ConnectedSocket() socket: Socket,
     @MessageBody() payload: EntrarSistemaPayload,
-  ): Ack<{ apelido: string; salas: SalaResumo[] }> {
-    return this.comAck(socket, () => {
+  ): Promise<Ack<{ apelido: string; salas: SalaResumo[] }>> {
+    return this.comAck(socket, async () => {
       const apelido = this.session.registrar(socket.id, payload?.apelido ?? '');
-      return { apelido, salas: this.rooms.listar() };
+      return { apelido, salas: await this.rooms.listar() };
     });
   }
 
   @SubscribeMessage(ClientEvents.LISTAR_SALAS) // RF02
-  listarSalas(@ConnectedSocket() socket: Socket): Ack<{ salas: SalaResumo[] }> {
-    return this.comAck(socket, () => ({ salas: this.rooms.listar() }));
+  listarSalas(
+    @ConnectedSocket() socket: Socket,
+  ): Promise<Ack<{ salas: SalaResumo[] }>> {
+    return this.comAck(socket, async () => ({
+      salas: await this.rooms.listar(),
+    }));
   }
 
   @SubscribeMessage(ClientEvents.CRIAR_SALA) // RF04
   criarSala(
     @ConnectedSocket() socket: Socket,
     @MessageBody() payload: CriarSalaPayload,
-  ): Ack<{ sala: SalaResumo }> {
-    return this.comAck(socket, () => {
+  ): Promise<Ack<{ sala: SalaResumo }>> {
+    return this.comAck(socket, async () => {
       const apelido = this.session.exigirApelido(socket.id);
-      const sala = this.rooms.criar(
+      const sala = await this.rooms.criar(
         payload?.nome ?? '',
         payload?.tema ?? '',
         apelido,
       );
       this.ingressar(socket, sala.id);
-      this.emitirHistoricoEParticipantes(socket, sala.id);
-      this.emitirListaSalas();
+      await this.emitirHistoricoEParticipantes(socket, sala.id);
+      await this.emitirListaSalas();
       return { sala };
     });
   }
@@ -102,15 +106,15 @@ export class ChatGateway implements OnGatewayDisconnect {
   entrarSala(
     @ConnectedSocket() socket: Socket,
     @MessageBody() payload: EntrarSalaPayload,
-  ): Ack<{ sala: SalaResumo }> {
-    return this.comAck(socket, () => {
+  ): Promise<Ack<{ sala: SalaResumo }>> {
+    return this.comAck(socket, async () => {
       const apelido = this.session.exigirApelido(socket.id);
-      const sala = this.rooms.entrar(payload?.salaId ?? '', apelido);
+      const sala = await this.rooms.entrar(payload?.salaId ?? '', apelido);
       this.ingressar(socket, sala.id);
-      this.emitirHistoricoEParticipantes(socket, sala.id);
+      await this.emitirHistoricoEParticipantes(socket, sala.id);
       this.emitirAviso(sala.id, `${apelido} entrou na sala`); // RF10
-      this.emitirParticipantes(sala.id);
-      this.emitirListaSalas();
+      await this.emitirParticipantes(sala.id);
+      await this.emitirListaSalas();
       return { sala };
     });
   }
@@ -119,10 +123,10 @@ export class ChatGateway implements OnGatewayDisconnect {
   sairSala(
     @ConnectedSocket() socket: Socket,
     @MessageBody() payload: EntrarSalaPayload,
-  ): Ack {
-    return this.comAck(socket, () => {
+  ): Promise<Ack> {
+    return this.comAck(socket, async () => {
       const apelido = this.session.exigirApelido(socket.id);
-      this.deixarSala(socket, payload?.salaId ?? '', apelido);
+      await this.deixarSala(socket, payload?.salaId ?? '', apelido);
       return undefined;
     });
   }
@@ -133,13 +137,13 @@ export class ChatGateway implements OnGatewayDisconnect {
   enviarMensagem(
     @ConnectedSocket() socket: Socket,
     @MessageBody() payload: EnviarMensagemPayload,
-  ): Ack {
-    return this.comAck(socket, () => {
+  ): Promise<Ack> {
+    return this.comAck(socket, async () => {
       const apelido = this.session.exigirApelido(socket.id);
       if (!this.rooms.estaNaSala(payload?.salaId ?? '', apelido)) {
         throw new DomainError('FORA_DA_SALA', 'Você não está nesta sala.');
       }
-      const mensagem = this.messages.adicionar(
+      const mensagem = await this.messages.adicionar(
         payload.salaId,
         apelido,
         payload.conteudo ?? '',
@@ -169,11 +173,11 @@ export class ChatGateway implements OnGatewayDisconnect {
   removerMensagem(
     @ConnectedSocket() socket: Socket,
     @MessageBody() payload: RemoverMensagemPayload,
-  ): Ack {
-    return this.comAck(socket, () => {
+  ): Promise<Ack> {
+    return this.comAck(socket, async () => {
       const apelido = this.session.exigirApelido(socket.id);
-      this.exigirModerador(payload?.salaId ?? '', apelido);
-      this.messages.remover(payload.salaId, payload.mensagemId);
+      await this.exigirModerador(payload?.salaId ?? '', apelido);
+      await this.messages.remover(payload.salaId, payload.mensagemId);
       this.server.to(payload.salaId).emit(ServerEvents.MENSAGEM_REMOVIDA, {
         salaId: payload.salaId,
         mensagemId: payload.mensagemId,
@@ -186,10 +190,10 @@ export class ChatGateway implements OnGatewayDisconnect {
   expulsarUsuario(
     @ConnectedSocket() socket: Socket,
     @MessageBody() payload: ExpulsarUsuarioPayload,
-  ): Ack {
-    return this.comAck(socket, () => {
+  ): Promise<Ack> {
+    return this.comAck(socket, async () => {
       const moderador = this.session.exigirApelido(socket.id);
-      this.exigirModerador(payload?.salaId ?? '', moderador);
+      await this.exigirModerador(payload?.salaId ?? '', moderador);
       const alvo = payload.apelido;
       this.rooms.sair(payload.salaId, alvo);
       const alvoSocketId = this.session.socketDe(alvo);
@@ -203,8 +207,8 @@ export class ChatGateway implements OnGatewayDisconnect {
         });
       }
       this.emitirAviso(payload.salaId, `${alvo} foi removido por ${moderador}`);
-      this.emitirParticipantes(payload.salaId);
-      this.emitirListaSalas();
+      await this.emitirParticipantes(payload.salaId);
+      await this.emitirListaSalas();
       return undefined;
     });
   }
@@ -221,17 +225,24 @@ export class ChatGateway implements OnGatewayDisconnect {
     salas.add(salaId);
   }
 
-  private deixarSala(socket: Socket, salaId: string, apelido: string): void {
+  private async deixarSala(
+    socket: Socket,
+    salaId: string,
+    apelido: string,
+  ): Promise<void> {
     this.rooms.sair(salaId, apelido);
     void socket.leave(salaId);
     this.salasPorSocket.get(socket.id)?.delete(salaId);
     this.emitirAviso(salaId, `${apelido} saiu da sala`);
-    this.emitirParticipantes(salaId);
-    this.emitirListaSalas();
+    await this.emitirParticipantes(salaId);
+    await this.emitirListaSalas();
   }
 
-  private exigirModerador(salaId: string, apelido: string): void {
-    if (!this.rooms.ehModerador(salaId, apelido)) {
+  private async exigirModerador(
+    salaId: string,
+    apelido: string,
+  ): Promise<void> {
+    if (!(await this.rooms.ehModerador(salaId, apelido))) {
       throw new DomainError(
         'SEM_PERMISSAO',
         'Apenas o moderador da sala pode executar esta ação.',
@@ -239,29 +250,38 @@ export class ChatGateway implements OnGatewayDisconnect {
     }
   }
 
-  private emitirHistoricoEParticipantes(socket: Socket, salaId: string): void {
-    socket.emit(ServerEvents.HISTORICO, this.messages.recentes(salaId)); // RF08
-    socket.emit(ServerEvents.PARTICIPANTES, this.rooms.participantes(salaId)); // RF07
+  private async emitirHistoricoEParticipantes(
+    socket: Socket,
+    salaId: string,
+  ): Promise<void> {
+    socket.emit(ServerEvents.HISTORICO, await this.messages.recentes(salaId)); // RF08
+    socket.emit(
+      ServerEvents.PARTICIPANTES,
+      await this.rooms.participantes(salaId),
+    ); // RF07
   }
 
-  private emitirParticipantes(salaId: string): void {
+  private async emitirParticipantes(salaId: string): Promise<void> {
     this.server
       .to(salaId)
-      .emit(ServerEvents.PARTICIPANTES, this.rooms.participantes(salaId));
+      .emit(ServerEvents.PARTICIPANTES, await this.rooms.participantes(salaId));
   }
 
   private emitirAviso(salaId: string, texto: string): void {
     this.server.to(salaId).emit(ServerEvents.AVISO, { salaId, texto });
   }
 
-  private emitirListaSalas(): void {
-    this.server.emit(ServerEvents.SALAS_ATUALIZADAS, this.rooms.listar()); // RF02
+  private async emitirListaSalas(): Promise<void> {
+    this.server.emit(ServerEvents.SALAS_ATUALIZADAS, await this.rooms.listar()); // RF02
   }
 
   /** Executa a operação e converte DomainError em ack de erro (+ evento ERRO). */
-  private comAck<T>(socket: Socket, fn: () => T): Ack<T> {
+  private async comAck<T>(
+    socket: Socket,
+    fn: () => Promise<T>,
+  ): Promise<Ack<T>> {
     try {
-      return { sucesso: true, dados: fn() };
+      return { sucesso: true, dados: await fn() };
     } catch (erro) {
       if (erro instanceof DomainError) {
         const payload: ErroPayload = {
