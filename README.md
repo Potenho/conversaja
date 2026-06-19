@@ -4,8 +4,9 @@ Sistema Web de **chat em tempo real**: salas temáticas, identificação por ape
 imediato pelo navegador, sem cadastro complexo.
 
 Monorepo com **Angular** (frontend), **NestJS + Socket.IO** (backend) e um pacote de
-**contratos compartilhados**. Documentação de requisitos em [docs/](docs/) e detalhes de
-implementação/testes em [docs/IMPLEMENTACAO.md](docs/IMPLEMENTACAO.md).
+**contratos compartilhados**. Documentação: requisitos em [docs/](docs/), arquitetura em
+[docs/ARQUITETURA.md](docs/ARQUITETURA.md) e implementação/testes em
+[docs/IMPLEMENTACAO.md](docs/IMPLEMENTACAO.md).
 
 ## Pré-requisitos
 
