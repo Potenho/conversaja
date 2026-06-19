@@ -1,6 +1,21 @@
-# ConversaJá — sobe frontend (nginx) e backend (NestJS) juntos.
+# ConversaJá — sobe banco (Postgres), backend (NestJS) e frontend (nginx).
 # Uso: docker compose up --build  ->  acesse http://localhost:8080
 services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: conversaja
+      POSTGRES_PASSWORD: conversaja
+      POSTGRES_DB: conversaja
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U conversaja']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
   backend:
     build:
       context: .
@@ -8,6 +23,10 @@ services:
     environment:
       - PORT=3000
       - NODE_ENV=production
+      - DATABASE_URL=postgresql://conversaja:conversaja@db:5432/conversaja
+    depends_on:
+      db:
+        condition: service_healthy
     expose:
       - '3000'
     restart: unless-stopped
@@ -21,3 +40,6 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+
+volumes:
+  pgdata:

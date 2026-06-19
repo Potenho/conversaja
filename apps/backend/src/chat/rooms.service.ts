@@ -1,34 +1,33 @@
 import { Injectable } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
 import {
-  LIMITES,
   Papel,
   Participante,
   SalaResumo,
   Visibilidade,
+  LIMITES,
 } from '@conversaja/shared';
 import { DomainError } from './domain-error';
-
-interface RoomEntity {
-  id: string;
-  nome: string;
-  tema: string;
-  visibilidade: Visibilidade;
-  capacidadeMax: number;
-  criadaEm: Date;
-  participantes: Map<string, Papel>; // apelido -> papel
-}
+import { SalaRecord, SalaStore } from './stores/sala-store';
 
 /**
- * Gerencia as salas e a participação dos usuários (em memória).
- * Cobre RN03 (criador vira moderador), RN08 (capacidade máxima) e a listagem (RF02).
+ * Gerencia as salas. Os dados das salas são persistidos via {@link SalaStore};
+ * a **presença online** (quem está conectado em cada sala) é efêmera e vive em
+ * memória, pois está atrelada às conexões WebSocket ativas.
+ *
+ * Cobre RN03 (criador é moderador), RN08 (capacidade máxima) e a listagem (RF02).
  */
 @Injectable()
 export class RoomsService {
-  private readonly salas = new Map<string, RoomEntity>();
+  private readonly presenca = new Map<string, Set<string>>(); // salaId -> apelidos online
 
-  /** RF04 — cria uma sala pública; o criador entra como moderador (RN03). */
-  criar(nome: string, tema: string, criador: string): SalaResumo {
+  constructor(private readonly store: SalaStore) {}
+
+  /** RF04 — cria uma sala pública; o criador entra e é o moderador (RN03). */
+  async criar(
+    nome: string,
+    tema: string,
+    criador: string,
+  ): Promise<SalaResumo> {
     const nomeLimpo = nome.trim();
     if (nomeLimpo.length < 1 || nomeLimpo.length > 60) {
       throw new DomainError(
@@ -36,90 +35,96 @@ export class RoomsService {
         'O nome da sala deve ter de 1 a 60 caracteres.',
       );
     }
-    const duplicada = [...this.salas.values()].some(
-      (s) => s.nome.toLowerCase() === nomeLimpo.toLowerCase(),
-    );
-    if (duplicada) {
+    if (await this.store.existeNome(nomeLimpo)) {
       throw new DomainError(
         'NOME_SALA_DUPLICADO',
         'Já existe uma sala com esse nome.',
       );
     }
-    const sala: RoomEntity = {
-      id: randomUUID(),
+    const rec = await this.store.criar({
       nome: nomeLimpo,
       tema: tema.trim(),
+      criadorApelido: criador,
       visibilidade: Visibilidade.PUBLICA,
       capacidadeMax: LIMITES.SALA_CAPACIDADE_PADRAO,
-      criadaEm: new Date(),
-      participantes: new Map([[criador, Papel.MODERADOR]]),
-    };
-    this.salas.set(sala.id, sala);
-    return this.resumo(sala);
+    });
+    this.presencaDe(rec.id).add(criador);
+    return this.resumo(rec);
   }
 
   /** RF02 — lista todas as salas com a contagem de participantes online. */
-  listar(): SalaResumo[] {
-    return [...this.salas.values()].map((s) => this.resumo(s));
+  async listar(): Promise<SalaResumo[]> {
+    const recs = await this.store.listarTodas();
+    return recs.map((r) => this.resumo(r));
   }
 
   /** RF03 — adiciona o usuário à sala como participante, respeitando RN08. */
-  entrar(salaId: string, apelido: string): SalaResumo {
-    const sala = this.exigirSala(salaId);
-    if (
-      !sala.participantes.has(apelido) &&
-      sala.participantes.size >= sala.capacidadeMax
-    ) {
+  async entrar(salaId: string, apelido: string): Promise<SalaResumo> {
+    const rec = await this.exigirSala(salaId);
+    const online = this.presencaDe(rec.id);
+    if (!online.has(apelido) && online.size >= rec.capacidadeMax) {
       throw new DomainError(
         'SALA_CHEIA',
         'Esta sala atingiu a capacidade máxima.',
       );
     }
-    if (!sala.participantes.has(apelido)) {
-      sala.participantes.set(apelido, Papel.PARTICIPANTE);
-    }
-    return this.resumo(sala);
+    online.add(apelido);
+    return this.resumo(rec);
   }
 
-  /** RF11 — remove o usuário da sala. */
+  /** RF11 — remove o usuário da presença da sala. */
   sair(salaId: string, apelido: string): void {
-    this.salas.get(salaId)?.participantes.delete(apelido);
+    this.presenca.get(salaId)?.delete(apelido);
   }
 
-  participantes(salaId: string): Participante[] {
-    const sala = this.exigirSala(salaId);
-    return [...sala.participantes.entries()].map(([apelido, papel]) => ({
+  async participantes(salaId: string): Promise<Participante[]> {
+    const rec = await this.exigirSala(salaId);
+    return [...this.presencaDe(rec.id)].map((apelido) => ({
       apelido,
-      papel,
+      papel: this.papel(rec, apelido),
     }));
   }
 
-  ehModerador(salaId: string, apelido: string): boolean {
-    return (
-      this.salas.get(salaId)?.participantes.get(apelido) === Papel.MODERADOR
-    );
+  async ehModerador(salaId: string, apelido: string): Promise<boolean> {
+    const rec = await this.store.buscarPorId(salaId);
+    return rec?.criadorApelido === apelido;
   }
 
   estaNaSala(salaId: string, apelido: string): boolean {
-    return this.salas.get(salaId)?.participantes.has(apelido) ?? false;
+    return this.presenca.get(salaId)?.has(apelido) ?? false;
   }
 
-  private exigirSala(salaId: string): RoomEntity {
-    const sala = this.salas.get(salaId);
-    if (!sala) {
+  private papel(rec: SalaRecord, apelido: string): Papel {
+    return rec.criadorApelido === apelido
+      ? Papel.MODERADOR
+      : Papel.PARTICIPANTE;
+  }
+
+  private presencaDe(salaId: string): Set<string> {
+    let online = this.presenca.get(salaId);
+    if (!online) {
+      online = new Set();
+      this.presenca.set(salaId, online);
+    }
+    return online;
+  }
+
+  private async exigirSala(salaId: string): Promise<SalaRecord> {
+    const rec = await this.store.buscarPorId(salaId);
+    if (!rec) {
       throw new DomainError('SALA_NAO_ENCONTRADA', 'Sala não encontrada.');
     }
-    return sala;
+    return rec;
   }
 
-  private resumo(sala: RoomEntity): SalaResumo {
+  private resumo(rec: SalaRecord): SalaResumo {
     return {
-      id: sala.id,
-      nome: sala.nome,
-      tema: sala.tema,
-      visibilidade: sala.visibilidade,
-      participantesOnline: sala.participantes.size,
-      capacidadeMax: sala.capacidadeMax,
+      id: rec.id,
+      nome: rec.nome,
+      tema: rec.tema,
+      visibilidade: rec.visibilidade,
+      participantesOnline: this.presenca.get(rec.id)?.size ?? 0,
+      capacidadeMax: rec.capacidadeMax,
     };
   }
 }
