@@ -9,4 +9,5 @@ export abstract class MensagemStore {
   abstract listarRecentes(salaId: string, limite: number): Promise<Mensagem[]>;
   abstract existe(salaId: string, id: string): Promise<boolean>;
   abstract remover(salaId: string, id: string): Promise<void>;
+  abstract removerPorSala(salaId: string): Promise<void>;
 }

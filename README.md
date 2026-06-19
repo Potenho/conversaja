@@ -38,6 +38,13 @@ docker compose up --build
 Acesse `http://localhost:8080`. O nginx serve o Angular e encaminha o WebSocket (`/socket.io`)
 para o backend na mesma origem; o backend persiste salas e mensagens no Postgres.
 
+## Painel administrativo
+
+Acesse `/admin` (ex.: `http://localhost:8080/admin`) e informe o token definido em
+`ADMIN_TOKEN` (padrão `admin` em desenvolvimento). Lá é possível ver métricas de uso
+(salas ativas e usuários online) e criar/editar/remover salas oficiais — as mudanças
+aparecem no lobby de todos em tempo real.
+
 ## Scripts (raiz)
 
 | Script                  | O que faz                                            |

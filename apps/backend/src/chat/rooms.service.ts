@@ -77,6 +77,11 @@ export class RoomsService {
     this.presenca.get(salaId)?.delete(apelido);
   }
 
+  /** Limpa toda a presença de uma sala (ex.: sala encerrada pelo admin — RF14). */
+  encerrarPresenca(salaId: string): void {
+    this.presenca.delete(salaId);
+  }
+
   async participantes(salaId: string): Promise<Participante[]> {
     const rec = await this.exigirSala(salaId);
     return [...this.presencaDe(rec.id)].map((apelido) => ({

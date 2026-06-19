@@ -89,8 +89,8 @@ Cada funcionalidade rastreia até um RF do documento de requisitos. Estado: ☐ 
 | RF11  | Sair da sala / sistema               | backend gateway · front `sala`           | ☑  |
 | RF12  | Remover mensagem (moderação)         | backend `chat/messages` (gateway)        | ☑  |
 | RF13  | Expulsar usuário (moderação)         | backend gateway                          | ☑  |
-| RF14  | Gerenciar salas oficiais (admin)     | backend `admin`                          | ☐  |
-| RF15  | Monitorar o sistema (admin)          | backend `admin` · front `admin`          | ☐  |
+| RF14  | Gerenciar salas oficiais (admin)     | backend `admin` (REST) · front `admin`   | ☑  |
+| RF15  | Monitorar o sistema (admin)          | backend `admin` · front `admin`          | ☑  |
 
 Regras de negócio já implementadas como validações/serviços: RN01 (apelido único, 3–20 alfanum.),
 RN02 (só moderador modera), RN03 (criador vira moderador), RN04 (≤500 caracteres),
@@ -102,8 +102,12 @@ atreladas às conexões WebSocket), o que é coerente com a natureza de tempo re
 Padrão de repositório (`SalaStore`/`MensagemStore`): implementação TypeORM em produção e em
 memória nos testes — por isso os testes rodam sem banco.
 
-Pendentes (próximas etapas): RN06 (bloqueio de reingresso por 10 min após expulsão),
-RN07 (remoção automática de salas públicas ociosas) e o painel admin (RF14/RF15).
+Administração (RF14/RF15): painel acessível em `/admin`, autenticado por token
+(`ADMIN_TOKEN`). Expõe métricas (salas ativas, usuários online) e CRUD de salas oficiais via
+REST; mudanças são refletidas no lobby de todos por broadcast WebSocket.
+
+Pendentes (próximas etapas): RN06 (bloqueio de reingresso por 10 min após expulsão) e
+RN07 (remoção automática de salas públicas ociosas).
 
 ---
 
@@ -196,6 +200,7 @@ Atualize esta seção a cada avanço relevante (ordem cronológica inversa).
 
 | Data       | Mudança                                                        |
 |------------|---------------------------------------------------------------|
+| 2026-06-19 | Painel administrativo (RF14/RF15): API REST protegida por token, métricas de uso e CRUD de salas oficiais com reflexo em tempo real no lobby; tela `/admin` no frontend. |
 | 2026-06-19 | Persistência: salas e mensagens em PostgreSQL via TypeORM (padrão de repositório com stores TypeORM/em memória). Serviço Postgres no `docker-compose.yml`. Novo e2e de fluxo WebSocket real (dois clientes). |
 | 2026-06-18 | Implantação e CI/CD: pipeline GitHub Actions (lint + testes + build), Dockerfiles de backend e frontend (nginx com proxy WebSocket), `docker-compose.yml` e instruções no `README.md`. |
 | 2026-06-18 | Núcleo de chat em tempo real: gateway WebSocket + serviços de sessão/salas/mensagens (RN01–RN08, sanitização XSS) e telas entrada/lobby/sala. Frontend migrado para Angular 22 (Vitest, sem Karma); Node ≥24.15 (`.nvmrc`). |

@@ -166,3 +166,26 @@ export interface ErroPayload {
   codigo: string;
   mensagem: string;
 }
+
+// ---------------------------------------------------------------------------
+// Administração (RF14 / RF15) — contratos REST
+// ---------------------------------------------------------------------------
+
+/** RF15 — indicadores de uso exibidos no painel administrativo. */
+export interface MetricasAdmin {
+  salasAtivas: number;
+  usuariosOnline: number;
+}
+
+/** RF14 — criação de sala oficial pelo administrador. */
+export interface CriarSalaOficialPayload {
+  nome: string;
+  tema: string;
+  capacidadeMax?: number;
+}
+
+/** RF14 — edição de uma sala pelo administrador. */
+export interface AtualizarSalaPayload {
+  nome?: string;
+  tema?: string;
+}

@@ -1,0 +1,107 @@
+<header class="topbar">
+  <div class="brand"><span class="dot"></span> ConversaJá <span class="badge oficial">admin</span></div>
+  <div class="user">
+    <a routerLink="/" class="btn btn-ghost btn-sm">Voltar ao chat</a>
+    @if (api.autenticado()) {
+      <button class="btn btn-ghost btn-sm" (click)="sair()">Sair</button>
+    }
+  </div>
+</header>
+
+@if (!api.autenticado()) {
+  <!-- Acesso administrativo -->
+  <div class="login-wrap">
+    <div class="card login-card">
+      <h1>Painel administrativo</h1>
+      <p class="hint">Informe o token de administrador para continuar.</p>
+      <form (ngSubmit)="entrar()">
+        <input
+          class="input"
+          type="password"
+          name="token"
+          [(ngModel)]="token"
+          [class.error]="erroLogin()"
+          placeholder="Token de administrador"
+        />
+        @if (erroLogin()) {
+          <p class="helper err">{{ erroLogin() }}</p>
+        }
+        <button class="btn btn-primary btn-block" type="submit" [disabled]="entrando()">
+          {{ entrando() ? 'Entrando…' : 'Entrar' }}
+        </button>
+      </form>
+    </div>
+  </div>
+} @else {
+  <div class="container">
+    <div class="page-head"><h1>Painel administrativo</h1></div>
+
+    @if (erro()) {
+      <p class="erro-bar">{{ erro() }}</p>
+    }
+
+    <!-- Indicadores (RF15) -->
+    <div class="metrics">
+      <div class="card metric">
+        <div class="label">Salas ativas</div>
+        <div class="value">{{ metricas()?.salasAtivas ?? '—' }}</div>
+      </div>
+      <div class="card metric">
+        <div class="label">Usuários online</div>
+        <div class="value"><span class="online-dot"></span> {{ metricas()?.usuariosOnline ?? '—' }}</div>
+      </div>
+    </div>
+
+    <!-- Criar sala oficial (RF14) -->
+    <div class="card criar-box">
+      <h2>Nova sala oficial</h2>
+      <div class="row">
+        <input class="input" name="nome" [(ngModel)]="nome" placeholder="Nome da sala" />
+        <input class="input" name="tema" [(ngModel)]="tema" placeholder="Tema" />
+        <button class="btn btn-primary" (click)="criar()">Criar</button>
+      </div>
+    </div>
+
+    <!-- Lista de salas (RF14) -->
+    <div class="card tabela">
+      <table>
+        <thead>
+          <tr><th>Nome</th><th>Tema</th><th>Tipo</th><th>Online</th><th>Ações</th></tr>
+        </thead>
+        <tbody>
+          @for (sala of salas(); track sala.id) {
+            <tr>
+              @if (editandoId() === sala.id) {
+                <td><input class="input input-sm" name="editNome" [(ngModel)]="editNome" /></td>
+                <td><input class="input input-sm" name="editTema" [(ngModel)]="editTema" /></td>
+                <td colspan="2">—</td>
+                <td class="acoes">
+                  <button class="btn btn-primary btn-sm" (click)="salvarEdicao(sala.id)">Salvar</button>
+                  <button class="btn btn-ghost btn-sm" (click)="cancelarEdicao()">Cancelar</button>
+                </td>
+              } @else {
+                <td>{{ sala.nome }}</td>
+                <td>{{ sala.tema }}</td>
+                <td>
+                  @if (sala.visibilidade === 'OFICIAL') {
+                    <span class="badge oficial">oficial</span>
+                  } @else {
+                    <span class="badge">pública</span>
+                  }
+                </td>
+                <td>{{ sala.participantesOnline }}</td>
+                <td class="acoes">
+                  <button class="btn btn-ghost btn-sm" (click)="iniciarEdicao(sala)">Editar</button>
+                  <button class="btn btn-danger btn-sm" (click)="remover(sala)">Remover</button>
+                </td>
+              }
+            </tr>
+          }
+          @if (salas().length === 0) {
+            <tr><td colspan="5" class="vazio">Nenhuma sala cadastrada.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}

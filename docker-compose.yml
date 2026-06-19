@@ -24,6 +24,8 @@ services:
       - PORT=3000
       - NODE_ENV=production
       - DATABASE_URL=postgresql://conversaja:conversaja@db:5432/conversaja
+      # Troque por um valor forte em produção (acesso ao painel admin).
+      - ADMIN_TOKEN=admin
     depends_on:
       db:
         condition: service_healthy
