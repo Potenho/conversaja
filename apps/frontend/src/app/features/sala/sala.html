@@ -19,7 +19,7 @@
       <p class="erro-bar">{{ erro() }}</p>
     }
 
-    <div class="messages">
+    <div class="messages" #lista>
       @for (msg of mensagens(); track msg.id) {
         @if (msg.tipo === TipoMensagem.SISTEMA) {
           <div class="sys">— {{ msg.conteudo }} —</div>

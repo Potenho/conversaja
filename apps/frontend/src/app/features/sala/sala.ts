@@ -1,4 +1,13 @@
-import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -32,6 +41,11 @@ export class Sala implements OnInit, OnDestroy {
   private readonly subs: Subscription[] = [];
   private digitandoTimer?: ReturnType<typeof setTimeout>;
 
+  /** Container rolável das mensagens, para auto-scroll. */
+  private readonly lista = viewChild<ElementRef<HTMLElement>>('lista');
+  /** Distância (px) do fim ainda considerada "colado no fim". */
+  private static readonly LIMIAR_FIM = 80;
+
   readonly salaId = this.route.snapshot.paramMap.get('id')!;
   readonly apelido = this.session.apelido;
   readonly maxMensagem = LIMITES.MENSAGEM_MAX;
@@ -51,10 +65,15 @@ export class Sala implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.subs.push(
-      this.socket.on<Mensagem[]>(ServerEvents.HISTORICO).subscribe((m) => this.mensagens.set(m)),
-      this.socket
-        .on<Mensagem>(ServerEvents.NOVA_MENSAGEM)
-        .subscribe((m) => this.mensagens.update((lista) => [...lista, m])),
+      this.socket.on<Mensagem[]>(ServerEvents.HISTORICO).subscribe((m) => {
+        this.mensagens.set(m);
+        this.rolarParaFim(); // ao abrir a sala, mostra as mensagens mais recentes
+      }),
+      this.socket.on<Mensagem>(ServerEvents.NOVA_MENSAGEM).subscribe((m) => {
+        const colado = this.estaNoFim();
+        this.mensagens.update((lista) => [...lista, m]);
+        if (colado) this.rolarParaFim();
+      }),
       this.socket
         .on<Participante[]>(ServerEvents.PARTICIPANTES)
         .subscribe((p) => this.participantes.set(p)),
@@ -126,6 +145,23 @@ export class Sala implements OnInit, OnDestroy {
       tipo: TipoMensagem.SISTEMA,
       enviadaEm: new Date().toISOString(),
     };
+    const colado = this.estaNoFim();
     this.mensagens.update((lista) => [...lista, aviso]);
+    if (colado) this.rolarParaFim();
+  }
+
+  /** True se o scroll está no fim (ou bem perto) da lista de mensagens. */
+  private estaNoFim(): boolean {
+    const el = this.lista()?.nativeElement;
+    if (!el) return true; // antes de renderizar, trate como "no fim"
+    return el.scrollHeight - el.scrollTop - el.clientHeight <= Sala.LIMIAR_FIM;
+  }
+
+  /** Rola para o fim após o Angular renderizar a nova mensagem. */
+  private rolarParaFim(): void {
+    setTimeout(() => {
+      const el = this.lista()?.nativeElement;
+      if (el) el.scrollTop = el.scrollHeight;
+    });
   }
 }
