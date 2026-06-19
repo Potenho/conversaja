@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { SalaEntity } from '../database/entities/sala.entity';
 import { MensagemEntity } from '../database/entities/mensagem.entity';
 import { ChatGateway } from './chat.gateway';
+import { MaintenanceService } from './maintenance.service';
 import { MessagesService } from './messages.service';
 import { RoomsService } from './rooms.service';
 import { SessionService } from './session.service';
@@ -15,6 +16,7 @@ import { TypeOrmMensagemStore, TypeOrmSalaStore } from './stores/typeorm.store';
   imports: [TypeOrmModule.forFeature([SalaEntity, MensagemEntity])],
   providers: [
     ChatGateway,
+    MaintenanceService,
     SessionService,
     RoomsService,
     MessagesService,

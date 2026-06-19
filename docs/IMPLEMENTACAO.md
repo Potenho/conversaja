@@ -92,9 +92,10 @@ Cada funcionalidade rastreia até um RF do documento de requisitos. Estado: ☐ 
 | RF14  | Gerenciar salas oficiais (admin)     | backend `admin` (REST) · front `admin`   | ☑  |
 | RF15  | Monitorar o sistema (admin)          | backend `admin` · front `admin`          | ☑  |
 
-Regras de negócio já implementadas como validações/serviços: RN01 (apelido único, 3–20 alfanum.),
-RN02 (só moderador modera), RN03 (criador vira moderador), RN04 (≤500 caracteres),
-RN05 (sem mensagem vazia), RN08 (capacidade máx. da sala).
+Regras de negócio implementadas: RN01 (apelido único, 3–20 alfanum.), RN02 (só moderador modera),
+RN03 (criador vira moderador), RN04 (≤500 caracteres), RN05 (sem mensagem vazia),
+RN06 (bloqueio de reingresso após expulsão), RN07 (remoção de salas públicas ociosas) e
+RN08 (capacidade máx. da sala).
 
 Persistência: salas e mensagens são gravadas em **PostgreSQL via TypeORM**. A presença online
 (quem está conectado em cada sala) e as sessões de apelido são **efêmeras** (em memória,
@@ -106,8 +107,10 @@ Administração (RF14/RF15): painel acessível em `/admin`, autenticado por toke
 (`ADMIN_TOKEN`). Expõe métricas (salas ativas, usuários online) e CRUD de salas oficiais via
 REST; mudanças são refletidas no lobby de todos por broadcast WebSocket.
 
-Pendentes (próximas etapas): RN06 (bloqueio de reingresso por 10 min após expulsão) e
-RN07 (remoção automática de salas públicas ociosas).
+RN06 (bloqueio de reingresso por 10 min após expulsão) e RN07 (remoção automática de salas
+públicas ociosas por 30 min) estão implementadas no `RoomsService`: o bloqueio é registrado ao
+expulsar e verificado ao entrar; a varredura de salas ociosas roda periodicamente via
+`MaintenanceService`. Todas as RN01–RN08 estão cobertas.
 
 ---
 
@@ -200,6 +203,7 @@ Atualize esta seção a cada avanço relevante (ordem cronológica inversa).
 
 | Data       | Mudança                                                        |
 |------------|---------------------------------------------------------------|
+| 2026-06-19 | RN06 (bloqueio de reingresso pós-expulsão) e RN07 (remoção de salas públicas ociosas via varredura periódica). Todas as RF01–RF15 e RN01–RN08 implementadas. |
 | 2026-06-19 | Painel administrativo (RF14/RF15): API REST protegida por token, métricas de uso e CRUD de salas oficiais com reflexo em tempo real no lobby; tela `/admin` no frontend. |
 | 2026-06-19 | Persistência: salas e mensagens em PostgreSQL via TypeORM (padrão de repositório com stores TypeORM/em memória). Serviço Postgres no `docker-compose.yml`. Novo e2e de fluxo WebSocket real (dois clientes). |
 | 2026-06-18 | Implantação e CI/CD: pipeline GitHub Actions (lint + testes + build), Dockerfiles de backend e frontend (nginx com proxy WebSocket), `docker-compose.yml` e instruções no `README.md`. |
