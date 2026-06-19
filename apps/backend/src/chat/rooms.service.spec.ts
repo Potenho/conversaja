@@ -1,13 +1,20 @@
-import { Papel } from '@conversaja/shared';
+import { Papel, TipoMensagem, Visibilidade } from '@conversaja/shared';
 import { RoomsService } from './rooms.service';
 import { DomainError } from './domain-error';
-import { InMemorySalaStore } from './stores/in-memory.store';
+import {
+  InMemoryMensagemStore,
+  InMemorySalaStore,
+} from './stores/in-memory.store';
 
-describe('RoomsService (RN03, RN08 — salas)', () => {
+describe('RoomsService (RN03, RN06, RN07, RN08 — salas)', () => {
+  let salas: InMemorySalaStore;
+  let mensagens: InMemoryMensagemStore;
   let service: RoomsService;
 
   beforeEach(() => {
-    service = new RoomsService(new InMemorySalaStore());
+    salas = new InMemorySalaStore();
+    mensagens = new InMemoryMensagemStore();
+    service = new RoomsService(salas, mensagens);
   });
 
   it('cria sala e torna o criador moderador (RN03)', async () => {
@@ -61,5 +68,54 @@ describe('RoomsService (RN03, RN08 — salas)', () => {
     await expect(service.entrar('inexistente', 'maria')).rejects.toThrow(
       DomainError,
     );
+  });
+
+  it('bloqueia reingresso de usuário expulso por alguns minutos (RN06)', async () => {
+    const sala = await service.criar('Sala A', 'tema', 'maria');
+    await service.entrar(sala.id, 'joao');
+    service.sair(sala.id, 'joao');
+    service.bloquearReingresso(sala.id, 'joao');
+
+    await expect(service.entrar(sala.id, 'joao')).rejects.toThrow(
+      'reingressar',
+    );
+    // O bloqueio é case-insensitive (mesmo apelido).
+    expect(service.estaBloqueado(sala.id, 'JOAO')).toBe(true);
+    // Após o prazo (11 min depois), o bloqueio expira.
+    const onzeMinDepois = Date.now() + 11 * 60_000;
+    expect(service.estaBloqueado(sala.id, 'joao', onzeMinDepois)).toBe(false);
+  });
+
+  it('remove sala pública ociosa após o limite e mantém oficiais (RN07)', async () => {
+    const publica = await service.criar('Pública', 'tema', 'maria');
+    const oficial = await salas.criar({
+      nome: 'Oficial',
+      tema: 'x',
+      criadorApelido: 'admin',
+      visibilidade: Visibilidade.OFICIAL,
+      capacidadeMax: 50,
+    });
+
+    // Esvazia a sala pública (criador sai) e registra mensagem para checar limpeza.
+    await mensagens.inserir({
+      id: 'm1',
+      salaId: publica.id,
+      autor: 'maria',
+      conteudo: 'oi',
+      tipo: TipoMensagem.TEXTO,
+      enviadaEm: new Date().toISOString(),
+    });
+    service.sair(publica.id, 'maria');
+
+    // Primeira varredura: começa a contar a ociosidade, nada é removido.
+    expect(await service.removerSalasOciosas()).toEqual([]);
+
+    // 31 minutos depois: a sala pública vazia é removida; a oficial permanece.
+    const futuro = Date.now() + 31 * 60_000;
+    const removidas = await service.removerSalasOciosas(futuro);
+    expect(removidas).toEqual([publica.id]);
+    expect(await salas.buscarPorId(publica.id)).toBeNull();
+    expect(await salas.buscarPorId(oficial.id)).not.toBeNull();
+    expect(await mensagens.listarRecentes(publica.id, 50)).toHaveLength(0);
   });
 });

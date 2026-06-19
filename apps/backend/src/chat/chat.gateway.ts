@@ -196,6 +196,7 @@ export class ChatGateway implements OnGatewayDisconnect {
       await this.exigirModerador(payload?.salaId ?? '', moderador);
       const alvo = payload.apelido;
       this.rooms.sair(payload.salaId, alvo);
+      this.rooms.bloquearReingresso(payload.salaId, alvo); // RN06
       const alvoSocketId = this.session.socketDe(alvo);
       if (alvoSocketId) {
         const alvoSocket = this.server.sockets.sockets.get(alvoSocketId);

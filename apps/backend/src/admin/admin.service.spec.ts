@@ -21,7 +21,7 @@ describe('AdminService (RF14, RF15)', () => {
     salas = new InMemorySalaStore();
     mensagens = new InMemoryMensagemStore();
     session = new SessionService();
-    rooms = new RoomsService(salas);
+    rooms = new RoomsService(salas, mensagens);
     gateway = {
       notificarSalas: jest.fn().mockResolvedValue(undefined),
       encerrarSala: jest.fn().mockResolvedValue(undefined),
