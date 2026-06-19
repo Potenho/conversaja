@@ -48,6 +48,11 @@ npm install
 npm run dev:backend      # NestJS em watch
 npm run dev:frontend     # Angular dev server
 
+# docker (db + backend + frontend juntos -> http://localhost:8080)
+npm run docker:up        # build + sobe os três serviços
+npm run docker:down      # derruba os containers
+npm run docker:logs      # acompanha os logs
+
 # qualidade
 npm run lint
 npm run test             # unitários (todos os workspaces)

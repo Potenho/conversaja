@@ -33,7 +33,9 @@ por padrão aponta para o Postgres local em `localhost:5432`.
 Sobe banco (PostgreSQL), backend e frontend juntos, sem configurar ambiente manualmente:
 
 ```bash
-docker compose up --build
+npm run docker:up        # build + sobe os três serviços (db, backend, frontend)
+npm run docker:logs      # acompanha os logs dos containers
+npm run docker:down      # derruba os containers
 ```
 
 Acesse `http://localhost:8080`. O nginx serve o Angular e encaminha o WebSocket (`/socket.io`)
@@ -51,6 +53,9 @@ aparecem no lobby de todos em tempo real.
 | Script                  | O que faz                                            |
 |-------------------------|------------------------------------------------------|
 | `npm run build`         | Compila shared + backend + frontend                  |
+| `npm run docker:up`     | Build + sobe db, backend e frontend em containers    |
+| `npm run docker:down`   | Derruba os containers                                |
+| `npm run docker:logs`   | Acompanha os logs dos containers                     |
 | `npm test`              | Testes do backend (Jest) e do frontend (Vitest)      |
 | `npm run test:backend`  | Apenas backend (unitários)                           |
 | `npm run test:frontend` | Apenas frontend (Vitest + jsdom, sem navegador)      |
